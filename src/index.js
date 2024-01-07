@@ -3,7 +3,7 @@ const cors = require("cors");
 const dbConnection = require("./config/dbConfig");
 const userRouter = require("./routes/userRoute");
 const reviewRouter = require("./routes/reviewRouter");
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
 const app = express();
 
