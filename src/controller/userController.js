@@ -1,4 +1,9 @@
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const UserModel = require("../model/user/userModel");
+require("dotenv").config();
+
+const saltRounds = 10;
 
 const register = async (req, res) => {
   try {
@@ -11,9 +16,13 @@ const register = async (req, res) => {
         .json({ msg: "already registered, please login!", status: 409 });
     }
 
-    user = await UserModel.create({ name, email, password });
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    res.json({ status: 201, user });
+    console.log("hashedpasswrod", hashedPassword);
+
+    user = await UserModel.create({ name, email, password: hashedPassword });
+
+    res.json({ status: 201, msg: "created" });
   } catch (e) {
     res
       .status(500)
@@ -30,11 +39,21 @@ const login = async (req, res) => {
       return res.status(404).json({ msg: "user not found", status: 404 });
     }
 
-    if (user.password !== password) {
+    let comparedPassword = await bcrypt.compare(password, user.password);
+
+    if (!comparedPassword) {
       return res.status(400).json({ msg: "incorrect password!", status: 400 });
     }
 
-    res.json({ user, status: 200 });
+    user = {
+      _id: user._id.toHexString(),
+      name: user.name,
+      email: user.email,
+    };
+
+    const token = jwt.sign(user, process.env.SECRET_KEY, { expiresIn: "7d" });
+
+    res.json({ user, token, status: 200 });
   } catch (e) {
     res
       .status(500)

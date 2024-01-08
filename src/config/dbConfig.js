@@ -1,9 +1,8 @@
 const { connect } = require("mongoose");
+require("dotenv").config();
 
 const connection = () => {
-  return connect(
-    `mongodb+srv://ashwini1234:ashwini1234@cluster0.seroub9.mongodb.net/traya_review_system`
-  );
+  return connect(process.env.MONGO_URI);
 };
 
 module.exports = connection;
